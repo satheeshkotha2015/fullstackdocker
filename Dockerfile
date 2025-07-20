@@ -1,14 +1,18 @@
-# Use the official .NET SDK
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
-WORKDIR /app
-EXPOSE 80
-
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+# Stage 1: Build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY . .
+
+# Copy and restore project files
+COPY *.csproj ./
+RUN dotnet restore
+
+# Copy the full source and build
+COPY . ./
 RUN dotnet publish -c Release -o /app/publish
 
-FROM base AS final
+# Stage 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
+
 ENTRYPOINT ["dotnet", "fullstack.dll"]
