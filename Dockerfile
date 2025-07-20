@@ -2,13 +2,14 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy and restore project files
-COPY *.csproj ./
-RUN dotnet restore
-
-# Copy the full source and build
+# Copy everything
 COPY . ./
-RUN dotnet publish -c Release -o /app/publish
+
+# Restore using solution
+RUN dotnet restore ./fullstack.sln
+
+# Publish from project
+RUN dotnet publish ./fullstack/fullstack.csproj -c Release -o /app/publish
 
 # Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
